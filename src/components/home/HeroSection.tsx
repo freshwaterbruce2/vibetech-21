@@ -12,7 +12,7 @@ const HeroSection = () => {
             <img 
               src={bruceProfile} 
               alt="Bruce Freshwater - Digital Experience Expert" 
-              className="w-full h-full object-cover object-[center_25%]"
+              className="w-full h-full object-cover object-[center_35%]"
             />
           </div>
         </div>
