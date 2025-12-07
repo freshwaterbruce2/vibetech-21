@@ -14,7 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      leads: {
+        Row: {
+          company: string | null
+          company_logo: string | null
+          created_at: string
+          email: string
+          enriched_at: string | null
+          id: string
+          linkedin_url: string | null
+          location: string | null
+          name: string
+          phone: string | null
+          service_interest: string | null
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          company_logo?: string | null
+          created_at?: string
+          email: string
+          enriched_at?: string | null
+          id?: string
+          linkedin_url?: string | null
+          location?: string | null
+          name: string
+          phone?: string | null
+          service_interest?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          company_logo?: string | null
+          created_at?: string
+          email?: string
+          enriched_at?: string | null
+          id?: string
+          linkedin_url?: string | null
+          location?: string | null
+          name?: string
+          phone?: string | null
+          service_interest?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      todos: {
+        Row: {
+          category: string | null
+          completed: boolean
+          created_at: string
+          due_date: string | null
+          id: string
+          priority: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          completed?: boolean
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          completed?: boolean
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
