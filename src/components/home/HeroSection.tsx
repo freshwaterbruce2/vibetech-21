@@ -20,15 +20,15 @@ const HeroSection = () => {
         {/* Right side - Text with neon elements */}
         <div className="w-full md:w-2/3 md:pl-12">
           <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-tight text-white">
-            Hello, I'm <span className="text-[color:var(--c-cyan)]">Bruce Freshwater</span>
+            <span className="text-[color:var(--c-cyan)]">20+ Years</span> of Digital Excellence
           </h1>
           <div className="mb-6">
             <h2 className="text-2xl md:text-3xl font-semibold text-white">
-              Your Partner in Next-Level Digital Experiences
+              I'm Bruce Freshwater — IT Strategist & Digital Transformation Partner
             </h2>
           </div>
           <p className="mb-8 max-w-2xl text-white font-medium">
-            Imagine a world where your website or app loads instantly, welcomes every user, and feels as intuitive as a conversation. That's the power of design and code working in perfect harmony.
+            With two decades of hands-on experience in IT infrastructure and digital strategy, I've helped businesses of all sizes navigate complex technology landscapes. From legacy system modernization to cutting-edge web solutions, I bring the expertise to turn your vision into reality.
           </p>
           
           <div className="mb-8">
