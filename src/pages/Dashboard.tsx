@@ -26,19 +26,17 @@ const Dashboard = () => {
   
   const { trackEvent } = useAnalytics();
   
-  // Track dashboard page view with additional details
+  // Track dashboard page view ONCE on mount only
   useEffect(() => {
     trackEvent('dashboard_view', {
       category: 'Dashboard',
       label: isPro ? 'Pro Dashboard' : 'Standard Dashboard',
       customDimensions: {
-        is_pro_user: isPro,
-        active_tab: activeTab,
-        lead_count: leads.length,
-        has_error: error !== null
+        is_pro_user: isPro
       }
     });
-  }, [isPro, activeTab, leads.length, error, trackEvent]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only track once on mount
 
   // Simplified animation variant
   const containerVariants = {
