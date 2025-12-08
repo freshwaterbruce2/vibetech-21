@@ -11,7 +11,7 @@ export const useNotificationEffects = (
   const hasShownWelcome = useRef(false);
   const hasShownLeadUpdate = useRef(false);
   
-  // Initial data load effect - only run once
+  // Initial data load effect - only run once on mount
   useEffect(() => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
@@ -19,12 +19,14 @@ export const useNotificationEffects = (
     if (!dataLoadedRef.current) {
       loadDashboardData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
-  // Welcome notification - only show once
+  // Welcome notification - only show once on mount
   useEffect(() => {
-    if (hasShownWelcome.current || !isInitialLoadRef.current) return;
+    if (hasShownWelcome.current) return;
+    if (!isInitialLoadRef.current) return;
+    
     hasShownWelcome.current = true;
     
     const timeoutId = setTimeout(() => {
@@ -36,12 +38,15 @@ export const useNotificationEffects = (
     }, 2000);
     
     return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
-  // Lead qualification notification - only show once after data loads
+  // Lead qualification notification - show once after data loads
   useEffect(() => {
-    if (hasShownLeadUpdate.current || isInitialLoadRef.current || !dataLoadedRef.current) return;
+    if (hasShownLeadUpdate.current) return;
+    if (isInitialLoadRef.current) return;
+    if (!dataLoadedRef.current) return;
+    
     hasShownLeadUpdate.current = true;
     
     const timeoutId = setTimeout(() => {
@@ -53,6 +58,6 @@ export const useNotificationEffects = (
     }, 5000);
     
     return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataLoadedRef.current]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 };
