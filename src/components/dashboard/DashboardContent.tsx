@@ -4,27 +4,14 @@ import DashboardTabs from "@/components/dashboard/DashboardTabs";
 import TodoList from "@/components/TodoList";
 import NewLeadsMetric from "@/components/dashboard/NewLeadsMetric";
 import DashboardMetrics from "@/components/dashboard/DashboardMetrics";
-
-interface Lead {
-  id: number;
-  name: string;
-  email: string;
-  source: string;
-  status: string;
-  date: string;
-}
+import { Lead, DashboardMetrics as DashboardMetricsType } from "@/hooks/dashboard/types";
 
 interface DashboardContentProps {
   leads: Lead[];
-  metrics: {
-    totalLeads: number;
-    newLeadsToday: number;
-    conversionRate: string;
-    avgResponseTime: string;
-  };
+  metrics: DashboardMetricsType;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  onDeleteLead?: (id: number) => void;
+  onDeleteLead?: (id: string) => void;
   isPro?: boolean;
 }
 

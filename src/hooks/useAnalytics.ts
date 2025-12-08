@@ -90,7 +90,7 @@ export const useAnalytics = () => {
     });
   };
   
-  const trackLeadAction = (action: string, leadData?: { id: number; name: string }) => {
+  const trackLeadAction = (action: string, leadData?: { id: string | number; name: string }) => {
     trackEvent('lead_action', {
       category: 'Dashboard',
       label: action,

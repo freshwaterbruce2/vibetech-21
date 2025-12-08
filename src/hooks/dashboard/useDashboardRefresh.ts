@@ -1,6 +1,6 @@
 
-import { useState, useCallback, useRef } from "react";
-import { mockLeads, mockMetrics } from "./mockData";
+import { useCallback, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useNotifications } from "@/context/NotificationsContext";
 import { toast } from "@/hooks/use-toast";
 import { Lead, DashboardMetrics } from "./types";
@@ -11,15 +11,12 @@ export const useDashboardRefresh = (
   setError: React.Dispatch<React.SetStateAction<string | null>>,
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
-  // Refs for tracking state
   const isInitialLoadRef = useRef(true);
   const isManualRefreshRef = useRef(false);
   const dataLoadedRef = useRef(false);
   const { addNotification } = useNotifications();
   
-  // Data loading function
   const loadDashboardData = useCallback(async () => {
-    // Set manual refresh flag if it's not the initial load
     if (!isInitialLoadRef.current) {
       isManualRefreshRef.current = true;
     }
@@ -28,31 +25,53 @@ export const useDashboardRefresh = (
     setError(null);
     
     try {
-      // Simulate API call with timeout
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Fetch leads from Supabase
+      const { data: leadsData, error: leadsError } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false });
       
-      setLeads(mockLeads);
-      setMetrics(mockMetrics);
+      if (leadsError) throw leadsError;
       
-      // Mark data as loaded
+      const leads: Lead[] = leadsData || [];
+      setLeads(leads);
+      
+      // Calculate metrics from real data
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const newLeadsToday = leads.filter(lead => {
+        const leadDate = new Date(lead.created_at);
+        return leadDate >= today;
+      }).length;
+      
+      // Calculate conversion rate (leads with enriched data / total)
+      const enrichedLeads = leads.filter(lead => lead.enriched_at).length;
+      const conversionRate = leads.length > 0 
+        ? `${((enrichedLeads / leads.length) * 100).toFixed(1)}%` 
+        : "0%";
+      
+      setMetrics({
+        totalLeads: leads.length,
+        newLeadsToday,
+        conversionRate,
+        avgResponseTime: "< 1 hour"
+      });
+      
       dataLoadedRef.current = true;
       
-      // Only show notifications if it's a manual refresh (not the initial load)
       if (!isInitialLoadRef.current && isManualRefreshRef.current) {
-        // Add a success notification when data is loaded
         addNotification({
           title: "Dashboard Updated",
-          message: "Your Pro dashboard data has been refreshed",
+          message: "Your dashboard data has been refreshed",
           type: "success"
         });
 
-        // Add toast notification only on manual refresh
         toast({
           title: "Dashboard refreshed",
           description: "Your dashboard data has been updated successfully.",
         });
         
-        // Reset manual refresh flag
         isManualRefreshRef.current = false;
       }
       
@@ -68,14 +87,12 @@ export const useDashboardRefresh = (
           description: "Could not load your dashboard data. Please try again.",
         });
         
-        // Add an error notification
         addNotification({
           title: "Dashboard Error",
           message: "Failed to load dashboard data. Please try again.",
           type: "error"
         });
         
-        // Reset manual refresh flag
         isManualRefreshRef.current = false;
       }
       
