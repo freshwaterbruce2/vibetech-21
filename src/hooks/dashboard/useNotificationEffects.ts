@@ -1,5 +1,4 @@
-
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNotifications } from "@/context/NotificationsContext";
 
 export const useNotificationEffects = (
@@ -8,51 +7,52 @@ export const useNotificationEffects = (
   loadDashboardData: () => Promise<void>
 ) => {
   const { addNotification } = useNotifications();
+  const hasInitialized = useRef(false);
+  const hasShownWelcome = useRef(false);
+  const hasShownLeadUpdate = useRef(false);
   
   // Initial data load effect - only run once
   useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+    
     if (!dataLoadedRef.current) {
       loadDashboardData();
     }
-    
-    // Setup simple logging for debugging
-    console.log("Setting up realtime listeners");
-    
-    // Welcome notification
-    if (isInitialLoadRef.current) {
-      const timeoutId = setTimeout(() => {
-        addNotification({
-          title: "Welcome to Pro Dashboard",
-          message: "You now have access to enhanced features and performance.",
-          type: "info"
-        });
-      }, 2000);
-      
-      return () => {
-        clearTimeout(timeoutId);
-        console.log("Cleaning up realtime listeners");
-      };
-    }
-    
-    return () => {
-      console.log("Cleaning up realtime listeners");
-    };
-  }, [loadDashboardData, addNotification, isInitialLoadRef, dataLoadedRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
-  // Lead qualification notification effect 
+  // Welcome notification - only show once
   useEffect(() => {
-    // Only show this notification after initial load is complete and data is loaded
-    if (!isInitialLoadRef.current && dataLoadedRef.current) {
-      const timeoutId = setTimeout(() => {
-        addNotification({
-          title: "Lead Status Updated",
-          message: "Bob Johnson has been marked as 'Qualified'",
-          type: "success"
-        });
-      }, 5000);
-      
-      return () => clearTimeout(timeoutId);
-    }
-    return undefined;
-  }, [addNotification, dataLoadedRef, isInitialLoadRef]);
+    if (hasShownWelcome.current || !isInitialLoadRef.current) return;
+    hasShownWelcome.current = true;
+    
+    const timeoutId = setTimeout(() => {
+      addNotification({
+        title: "Welcome to Pro Dashboard",
+        message: "You now have access to enhanced features and performance.",
+        type: "info"
+      });
+    }, 2000);
+    
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  
+  // Lead qualification notification - only show once after data loads
+  useEffect(() => {
+    if (hasShownLeadUpdate.current || isInitialLoadRef.current || !dataLoadedRef.current) return;
+    hasShownLeadUpdate.current = true;
+    
+    const timeoutId = setTimeout(() => {
+      addNotification({
+        title: "Lead Status Updated",
+        message: "Bob Johnson has been marked as 'Qualified'",
+        type: "success"
+      });
+    }, 5000);
+    
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataLoadedRef.current]);
 };
