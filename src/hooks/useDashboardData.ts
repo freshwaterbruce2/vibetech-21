@@ -3,6 +3,7 @@ import { Lead, DashboardMetrics } from "./dashboard/types";
 import { useLeadActions } from "./dashboard/useLeadActions";
 import { useDashboardRefresh } from "./dashboard/useDashboardRefresh";
 import { useNotificationEffects } from "./dashboard/useNotificationEffects";
+import { useRealtimeLeads } from "./dashboard/useRealtimeLeads";
 
 const initialMetrics: DashboardMetrics = {
   totalLeads: 0,
@@ -30,6 +31,9 @@ export const useDashboardData = () => {
   
   // Setup notification effects
   useNotificationEffects(isInitialLoadRef, dataLoadedRef, loadDashboardData);
+  
+  // Subscribe to real-time lead updates
+  useRealtimeLeads(setLeads, setMetrics, isLoading);
 
   return {
     activeTab,
