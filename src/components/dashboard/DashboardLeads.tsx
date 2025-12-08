@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Building2, MapPin, Calendar } from "lucide-react";
 import { useState } from "react";
 import {
   AlertDialog,
@@ -14,27 +14,20 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAnalytics } from "@/hooks/useAnalytics";
-
-interface Lead {
-  id: number;
-  name: string;
-  email: string;
-  source: string;
-  status: string;
-  date: string;
-}
+import { Lead } from "@/hooks/dashboard/types";
+import { format } from "date-fns";
 
 interface DashboardLeadsProps {
   leads: Lead[];
-  onDeleteLead?: (id: number) => void;
+  onDeleteLead?: (id: string) => void;
 }
 
 const DashboardLeads = ({ leads, onDeleteLead }: DashboardLeadsProps) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [leadToDelete, setLeadToDelete] = useState<number | null>(null);
+  const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
   const { trackLeadAction } = useAnalytics();
   
-  const handleDeleteClick = (leadId: number) => {
+  const handleDeleteClick = (leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
     setLeadToDelete(leadId);
     setDeleteConfirmOpen(true);
@@ -73,29 +66,56 @@ const DashboardLeads = ({ leads, onDeleteLead }: DashboardLeadsProps) => {
                 <tr className="border-b border-aura-accent/10">
                   <th className="text-left py-3 px-2 font-medium text-aura-textSecondary">Name</th>
                   <th className="text-left py-3 px-2 font-medium text-aura-textSecondary">Email</th>
-                  <th className="text-left py-3 px-2 font-medium text-aura-textSecondary">Source</th>
-                  <th className="text-left py-3 px-2 font-medium text-aura-textSecondary">Status</th>
+                  <th className="text-left py-3 px-2 font-medium text-aura-textSecondary">Company</th>
+                  <th className="text-left py-3 px-2 font-medium text-aura-textSecondary">Interest</th>
                   <th className="text-left py-3 px-2 font-medium text-aura-textSecondary">Date</th>
                   <th className="text-left py-3 px-2 font-medium text-aura-textSecondary">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {leads.map((lead) => (
-                  <tr key={lead.id} className="border-b border-aura-accent/5 hover:bg-aura-accent/5">
-                    <td className="py-3 px-2">{lead.name}</td>
-                    <td className="py-3 px-2">{lead.email}</td>
-                    <td className="py-3 px-2">{lead.source}</td>
-                    <td className="py-3 px-2">
-                      <span className={`text-xs px-2 py-1 rounded-full 
-                        ${lead.status === "New" ? "bg-blue-100 text-blue-700" : 
-                          lead.status === "Contacted" ? "bg-yellow-100 text-yellow-700" :
-                          lead.status === "Qualified" ? "bg-purple-100 text-purple-700" :
-                          lead.status === "Proposal" ? "bg-orange-100 text-orange-700" :
-                          "bg-green-100 text-green-700"}`}>
-                        {lead.status}
-                      </span>
+                {leads.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-aura-textSecondary">
+                      No leads yet. Add your first lead to get started.
                     </td>
-                    <td className="py-3 px-2">{lead.date}</td>
+                  </tr>
+                ) : (
+                  leads.map((lead) => (
+                    <tr key={lead.id} className="border-b border-aura-accent/5 hover:bg-aura-accent/5">
+                      <td className="py-3 px-2">
+                        <div className="flex items-center gap-2">
+                          {lead.company_logo && (
+                            <img src={lead.company_logo} alt="" className="w-6 h-6 rounded" />
+                          )}
+                          <span>{lead.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-2">{lead.email}</td>
+                      <td className="py-3 px-2">
+                        {lead.company ? (
+                          <div className="flex items-center gap-1 text-sm">
+                            <Building2 className="h-3 w-3" />
+                            {lead.company}
+                          </div>
+                        ) : (
+                          <span className="text-aura-textSecondary">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-2">
+                        {lead.service_interest ? (
+                          <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+                            {lead.service_interest}
+                          </span>
+                        ) : (
+                          <span className="text-aura-textSecondary">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-2">
+                        <div className="flex items-center gap-1 text-sm">
+                          <Calendar className="h-3 w-3" />
+                          {format(new Date(lead.created_at), 'MMM d, yyyy')}
+                        </div>
+                      </td>
                     <td className="py-3 px-2">
                       <Button
                         variant="ghost"
@@ -106,8 +126,9 @@ const DashboardLeads = ({ leads, onDeleteLead }: DashboardLeadsProps) => {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </td>
-                  </tr>
-                ))}
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

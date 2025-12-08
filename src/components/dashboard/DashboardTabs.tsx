@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Calendar, MessageSquare, Users } from "lucide-react";
@@ -7,21 +6,13 @@ import DashboardOverview from "./DashboardOverview";
 import DashboardLeads from "./DashboardLeads";
 import DashboardEmptyState from "./DashboardEmptyState";
 import { useAnalytics } from "@/hooks/useAnalytics";
-
-interface Lead {
-  id: number;
-  name: string;
-  email: string;
-  source: string;
-  status: string;
-  date: string;
-}
+import { Lead } from "@/hooks/dashboard/types";
 
 interface DashboardTabsProps {
   leads: Lead[];
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  onDeleteLead?: (id: number) => void;
+  onDeleteLead?: (id: string) => void;
 }
 
 const DashboardTabs = ({ leads, activeTab, setActiveTab, onDeleteLead }: DashboardTabsProps) => {
