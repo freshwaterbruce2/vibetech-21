@@ -1,4 +1,3 @@
-
 import { Lead, DashboardMetrics } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { useNotifications } from "@/context/NotificationsContext";

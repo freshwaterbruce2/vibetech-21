@@ -90,14 +90,14 @@ export const useAnalytics = () => {
     });
   };
   
-  const trackLeadAction = (action: string, leadData?: { id: string | number; name: string }) => {
+  const trackLeadAction = (action: string, leadData?: { id: string; name: string }) => {
     trackEvent('lead_action', {
       category: 'Dashboard',
       label: action,
       customDimensions: { 
         action,
-        lead_id: leadData?.id,
-        lead_name: leadData?.name
+        lead_id: leadData?.id ?? '',
+        lead_name: leadData?.name ?? ''
       }
     });
   };
