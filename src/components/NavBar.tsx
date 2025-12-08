@@ -1,6 +1,9 @@
-
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { LogOut, LogIn } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type NavLink = {
   path: string;
@@ -20,6 +23,27 @@ const navLinks: NavLink[] = [
 ];
 
 const NavBar = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: 'Error signing out',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Signed out',
+        description: 'You have been successfully signed out.',
+      });
+      navigate('/');
+    }
+  };
+
   return (
     <header className="fixed w-full z-50 bg-aura-background/80 backdrop-blur-lg border-b border-aura-accent/10">
       <div className="max-w-7xl mx-auto px-4">
@@ -44,9 +68,32 @@ const NavBar = () => {
             ))}
           </nav>
           
-          {/* Theme toggle and mobile menu button */}
+          {/* Theme toggle, auth button, and mobile menu button */}
           <div className="flex items-center space-x-4">
             <ThemeToggle />
+            
+            {user ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="hidden md:flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/auth')}
+                className="hidden md:flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <LogIn className="h-4 w-4" />
+                Login
+              </Button>
+            )}
+            
             <button className="md:hidden text-white hover:text-aura-accent">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

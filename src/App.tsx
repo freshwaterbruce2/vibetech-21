@@ -1,9 +1,9 @@
-
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { useEffect } from 'react';
 import { useAnalytics } from './hooks/useAnalytics';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Eager load critical paths
 import Index from './pages/Index';
@@ -16,6 +16,7 @@ const Contact = lazy(() => import('./pages/Contact'));
 const Blog = lazy(() => import('./pages/Blog'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Auth = lazy(() => import('./pages/Auth'));
 const PalettePreview = lazy(() => import('./pages/PalettePreview'));
 const FuturisticDemo = lazy(() => import('./pages/FuturisticDemo'));
 const BlogPostPage = lazy(() => import('./pages/public/BlogPostPage'));
@@ -110,7 +111,8 @@ const App: React.FC = () => {
             <Route path="/blog/tag/:tagName" element={<Blog />} />
             <Route path="/blog/:postId" element={<BlogPostPage />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/palette-preview" element={<PalettePreview />} />
             <Route path="/futuristic-demo" element={<FuturisticDemo />} />
             <Route path="/services" element={<Services />} />
