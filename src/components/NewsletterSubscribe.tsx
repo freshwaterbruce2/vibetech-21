@@ -53,7 +53,7 @@ const NewsletterSubscribe = ({
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#8f2e9b] bg-primary-foreground" />
-            <Input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" />
+            <Input type="email" placeholder="" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" />
           </div>
           <Button type="submit" disabled={isLoading} className="bg-gradient-to-r from-aura-accent to-aura-accentSecondary hover:opacity-90 transition-opacity">
             {isLoading ? "Subscribing..." : "Subscribe"}
