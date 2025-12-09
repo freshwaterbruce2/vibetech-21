@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check, StopCircle, Clock, FileType } from "lucide-react";
+import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check, StopCircle, Clock, FileType, FileCode, FileDown, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -27,6 +27,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SavedContent {
@@ -427,14 +433,108 @@ const ContentGenerator = () => {
     });
   };
 
-  const handleDownload = () => {
-    const blob = new Blob([generatedContent], { type: "text/markdown" });
+  const handleExport = (format: 'markdown' | 'html' | 'txt' | 'pdf') => {
+    let content = generatedContent;
+    let mimeType = 'text/plain';
+    let extension = 'txt';
+
+    switch (format) {
+      case 'markdown':
+        mimeType = 'text/markdown';
+        extension = 'md';
+        break;
+      case 'html':
+        // Convert markdown-like content to basic HTML
+        content = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${topic}</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+    h1, h2, h3 { margin-top: 1.5em; }
+    p { margin: 1em 0; }
+  </style>
+</head>
+<body>
+${generatedContent
+  .split('\n')
+  .map(line => {
+    if (line.startsWith('### ')) return `<h3>${line.slice(4)}</h3>`;
+    if (line.startsWith('## ')) return `<h2>${line.slice(3)}</h2>`;
+    if (line.startsWith('# ')) return `<h1>${line.slice(2)}</h1>`;
+    if (line.trim() === '') return '';
+    return `<p>${line}</p>`;
+  })
+  .join('\n')}
+</body>
+</html>`;
+        mimeType = 'text/html';
+        extension = 'html';
+        break;
+      case 'txt':
+        // Strip markdown formatting for plain text
+        content = generatedContent
+          .replace(/#{1,6}\s/g, '')
+          .replace(/\*\*(.*?)\*\*/g, '$1')
+          .replace(/\*(.*?)\*/g, '$1')
+          .replace(/`(.*?)`/g, '$1');
+        mimeType = 'text/plain';
+        extension = 'txt';
+        break;
+      case 'pdf':
+        // Create a printable HTML and trigger print dialog
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>${topic}</title>
+              <style>
+                body { font-family: Georgia, serif; max-width: 700px; margin: 0 auto; padding: 2rem; line-height: 1.8; }
+                h1, h2, h3 { font-family: system-ui, sans-serif; }
+                @media print { body { padding: 0; } }
+              </style>
+            </head>
+            <body>
+              <h1>${topic}</h1>
+              ${generatedContent
+                .split('\n')
+                .map(line => {
+                  if (line.startsWith('### ')) return `<h3>${line.slice(4)}</h3>`;
+                  if (line.startsWith('## ')) return `<h2>${line.slice(3)}</h2>`;
+                  if (line.startsWith('# ')) return `<h1>${line.slice(2)}</h1>`;
+                  if (line.trim() === '') return '';
+                  return `<p>${line}</p>`;
+                })
+                .join('\n')}
+            </body>
+            </html>
+          `);
+          printWindow.document.close();
+          printWindow.print();
+        }
+        toast({
+          title: "PDF Export",
+          description: "Use your browser's print dialog to save as PDF.",
+        });
+        return;
+    }
+
+    const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${contentType}-${Date.now()}.md`;
+    a.download = `${topic || contentType}-${Date.now()}.${extension}`;
     a.click();
     URL.revokeObjectURL(url);
+
+    toast({
+      title: "Exported!",
+      description: `Content exported as ${extension.toUpperCase()}.`,
+    });
   };
 
   const contentTypeLabels: Record<string, string> = {
@@ -796,9 +896,31 @@ const ContentGenerator = () => {
                         <Button variant="outline" size="icon" onClick={handleCopy} title="Copy">
                           <Copy className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="icon" onClick={handleDownload} title="Download">
-                          <Download className="h-4 w-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon" title="Export">
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleExport('markdown')}>
+                              <FileDown className="mr-2 h-4 w-4" />
+                              Markdown (.md)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExport('html')}>
+                              <FileCode className="mr-2 h-4 w-4" />
+                              HTML (.html)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExport('txt')}>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Plain Text (.txt)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                              <FileType className="mr-2 h-4 w-4" />
+                              PDF (Print)
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     )}
                   </div>
