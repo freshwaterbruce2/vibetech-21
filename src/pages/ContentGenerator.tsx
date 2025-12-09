@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check } from "lucide-react";
+import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check, StopCircle } from "lucide-react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -46,6 +46,7 @@ const ContentGenerator = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [topic, setTopic] = useState("");
   const [contentType, setContentType] = useState("blog-post");
@@ -207,6 +208,18 @@ const ContentGenerator = () => {
     }
   };
 
+  const handleCancel = () => {
+    if (abortController) {
+      abortController.abort();
+      setAbortController(null);
+      setIsLoading(false);
+      toast({
+        title: "Generation cancelled",
+        description: "Content generation was stopped.",
+      });
+    }
+  };
+
   const handleGenerate = async () => {
     if (!topic.trim()) {
       toast({
@@ -217,6 +230,8 @@ const ContentGenerator = () => {
       return;
     }
 
+    const controller = new AbortController();
+    setAbortController(controller);
     setIsLoading(true);
     setGeneratedContent("");
 
@@ -228,6 +243,7 @@ const ContentGenerator = () => {
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({ type: contentType, topic, tone, length }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -303,6 +319,10 @@ const ContentGenerator = () => {
         description: "Your AI-powered content is ready.",
       });
     } catch (error: any) {
+      if (error.name === "AbortError") {
+        // User cancelled, already handled
+        return;
+      }
       console.error("Generation error:", error);
       toast({
         title: "Generation failed",
@@ -311,6 +331,7 @@ const ContentGenerator = () => {
       });
     } finally {
       setIsLoading(false);
+      setAbortController(null);
     }
   };
 
@@ -714,24 +735,36 @@ const ContentGenerator = () => {
                     )}
                   </div>
 
-                  <Button
-                    onClick={handleGenerate}
-                    disabled={isLoading}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Generate Content
-                      </>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleGenerate}
+                      disabled={isLoading}
+                      className="flex-1"
+                      size="lg"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Generate Content
+                        </>
+                      )}
+                    </Button>
+                    {isLoading && (
+                      <Button
+                        onClick={handleCancel}
+                        variant="destructive"
+                        size="lg"
+                      >
+                        <StopCircle className="mr-2 h-4 w-4" />
+                        Cancel
+                      </Button>
                     )}
-                  </Button>
+                  </div>
                 </CardContent>
               </Card>
 
