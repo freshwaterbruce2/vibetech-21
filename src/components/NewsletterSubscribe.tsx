@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Mail, Check } from "lucide-react";
+import confetti from "canvas-confetti";
 interface NewsletterSubscribeProps {
   title?: string;
   description?: string;
@@ -34,6 +35,14 @@ const NewsletterSubscribe = ({
 
     // Simulating API call
     setTimeout(() => {
+      // Trigger confetti celebration
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#8f2e9b', '#a855f7', '#c084fc', '#e879f9', '#f0abfc']
+      });
+      
       toast({
         title: "Success!",
         description: "You've been subscribed to our newsletter.",
