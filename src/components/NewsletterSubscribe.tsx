@@ -15,6 +15,7 @@ const NewsletterSubscribe = ({
 }: NewsletterSubscribeProps) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
@@ -52,8 +53,24 @@ const NewsletterSubscribe = ({
         
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#8f2e9b] bg-primary-foreground" />
-            <Input type="email" placeholder="" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#8f2e9b] bg-primary-foreground z-10" />
+            <label 
+              className={`absolute left-10 transition-all duration-200 pointer-events-none ${
+                isFocused || email 
+                  ? 'top-0 -translate-y-1/2 text-xs text-aura-accent bg-background px-1' 
+                  : 'top-1/2 -translate-y-1/2 text-sm text-muted-foreground'
+              }`}
+            >
+              Enter your email
+            </label>
+            <Input 
+              type="email" 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              className="pl-10 pt-2" 
+            />
           </div>
           <Button type="submit" disabled={isLoading} className="bg-gradient-to-r from-aura-accent to-aura-accentSecondary hover:opacity-90 transition-opacity">
             {isLoading ? "Subscribing..." : "Subscribe"}
