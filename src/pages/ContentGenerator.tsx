@@ -39,6 +39,8 @@ interface SavedContent {
   created_at: string;
 }
 
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-content`;
+
 const ContentGenerator = () => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -219,21 +221,87 @@ const ContentGenerator = () => {
     setGeneratedContent("");
 
     try {
-      const { data, error } = await supabase.functions.invoke("generate-content", {
-        body: { type: contentType, topic, tone, length },
+      const response = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ type: contentType, topic, tone, length }),
       });
 
-      if (error) throw error;
-
-      if (data?.content) {
-        setGeneratedContent(data.content);
-        toast({
-          title: "Content generated!",
-          description: "Your AI-powered content is ready.",
-        });
-      } else {
-        throw new Error("No content received");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error ${response.status}`);
       }
+
+      if (!response.body) {
+        throw new Error("No response body");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let contentSoFar = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        textBuffer += decoder.decode(value, { stream: true });
+
+        // Process line-by-line
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              contentSoFar += content;
+              setGeneratedContent(contentSoFar);
+            }
+          } catch {
+            // Incomplete JSON, put back and wait for more
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Final flush
+      if (textBuffer.trim()) {
+        for (let raw of textBuffer.split("\n")) {
+          if (!raw) continue;
+          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+          if (raw.startsWith(":") || raw.trim() === "") continue;
+          if (!raw.startsWith("data: ")) continue;
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              contentSoFar += content;
+              setGeneratedContent(contentSoFar);
+            }
+          } catch { /* ignore */ }
+        }
+      }
+
+      toast({
+        title: "Content generated!",
+        description: "Your AI-powered content is ready.",
+      });
     } catch (error: any) {
       console.error("Generation error:", error);
       toast({
@@ -674,10 +742,10 @@ const ContentGenerator = () => {
                     <div>
                       <CardTitle>Generated Content</CardTitle>
                       <CardDescription>
-                        Your AI-generated content appears here
+                        {isLoading ? "Content is streaming..." : "Your AI-generated content appears here"}
                       </CardDescription>
                     </div>
-                    {generatedContent && (
+                    {generatedContent && !isLoading && (
                       <div className="flex gap-2">
                         <Button 
                           variant="outline" 
@@ -709,6 +777,7 @@ const ContentGenerator = () => {
                         value={generatedContent}
                         onChange={(e) => setGeneratedContent(e.target.value)}
                         className="min-h-[400px] font-mono text-sm"
+                        readOnly={isLoading}
                       />
                     </div>
                   ) : (
