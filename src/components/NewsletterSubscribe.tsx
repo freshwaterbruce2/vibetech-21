@@ -45,7 +45,7 @@ const NewsletterSubscribe = ({
     //   headers: { 'Content-Type': 'application/json' }
     // });
   };
-  return <div className={`w-full ${className}`}>
+  return <div className="">
       <div className="bg-aura-backgroundLight border border-aura-accent/10 rounded-lg p-6 shadow-lg backdrop-blur-sm">
         <h3 className="text-xl font-bold mb-2 font-heading text-white">{title}</h3>
         <p className="text-white mb-4">{description}</p>
