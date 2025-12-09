@@ -23,6 +23,7 @@ const BlogPostPage = lazy(() => import('./pages/public/BlogPostPage'));
 const Services = lazy(() => import('./pages/Services'));
 const Tools = lazy(() => import('./pages/Tools'));
 const About = lazy(() => import('./pages/About'));
+const ContentGenerator = lazy(() => import('./pages/ContentGenerator'));
 
 // Loading component for suspense fallback
 const PageLoader = () => (
@@ -118,6 +119,7 @@ const App: React.FC = () => {
             <Route path="/services" element={<Services />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/about" element={<About />} />
+            <Route path="/content-generator" element={<ContentGenerator />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
