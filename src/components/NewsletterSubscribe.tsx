@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { Mail, Check } from "lucide-react";
+import { Mail, Check, Loader2 } from "lucide-react";
 import confetti from "canvas-confetti";
 interface NewsletterSubscribeProps {
   title?: string;
@@ -89,7 +89,12 @@ const NewsletterSubscribe = ({
             )}
           </div>
           <Button type="submit" disabled={isLoading} className="bg-gradient-to-r from-aura-accent to-aura-accentSecondary hover:opacity-90 transition-opacity">
-            {isLoading ? "Subscribing..." : "Subscribe"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Subscribing...
+              </>
+            ) : "Subscribe"}
           </Button>
         </form>
       </div>
