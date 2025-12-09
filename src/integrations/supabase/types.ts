@@ -92,6 +92,7 @@ export type Database = {
           content_type: string
           created_at: string
           id: string
+          tags: string[] | null
           title: string
           tone: string | null
           updated_at: string
@@ -102,6 +103,7 @@ export type Database = {
           content_type: string
           created_at?: string
           id?: string
+          tags?: string[] | null
           title: string
           tone?: string | null
           updated_at?: string
@@ -112,6 +114,7 @@ export type Database = {
           content_type?: string
           created_at?: string
           id?: string
+          tags?: string[] | null
           title?: string
           tone?: string | null
           updated_at?: string

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -16,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText } from "lucide-react";
+import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter } from "lucide-react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -34,6 +35,7 @@ interface SavedContent {
   content: string;
   content_type: string;
   tone: string;
+  tags: string[];
   created_at: string;
 }
 
@@ -51,20 +53,39 @@ const ContentGenerator = () => {
   const [savedContents, setSavedContents] = useState<SavedContent[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  
+  // Tags state
+  const [currentTags, setCurrentTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [filterTag, setFilterTag] = useState<string | null>(null);
 
   const fetchSavedContent = async () => {
     if (!user) return;
     
     setIsLoadingHistory(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("saved_content")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
+      if (filterTag) {
+        query = query.contains("tags", [filterTag]);
+      }
+
+      const { data, error } = await query;
+
       if (error) throw error;
       setSavedContents(data || []);
+      
+      // Extract all unique tags
+      const tags = new Set<string>();
+      data?.forEach((content) => {
+        content.tags?.forEach((tag: string) => tags.add(tag));
+      });
+      setAllTags(Array.from(tags).sort());
     } catch (error: any) {
       console.error("Error fetching saved content:", error);
     } finally {
@@ -76,7 +97,26 @@ const ContentGenerator = () => {
     if (user && isHistoryOpen) {
       fetchSavedContent();
     }
-  }, [user, isHistoryOpen]);
+  }, [user, isHistoryOpen, filterTag]);
+
+  const handleAddTag = () => {
+    const tag = tagInput.trim().toLowerCase();
+    if (tag && !currentTags.includes(tag)) {
+      setCurrentTags([...currentTags, tag]);
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setCurrentTags(currentTags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddTag();
+    }
+  };
 
   const handleGenerate = async () => {
     if (!topic.trim()) {
@@ -147,6 +187,7 @@ const ContentGenerator = () => {
         content: generatedContent,
         content_type: contentType,
         tone: tone,
+        tags: currentTags,
       });
 
       if (error) throw error;
@@ -155,6 +196,7 @@ const ContentGenerator = () => {
         title: "Content saved!",
         description: "Your content has been saved to your history.",
       });
+      setCurrentTags([]);
     } catch (error: any) {
       console.error("Save error:", error);
       toast({
@@ -172,6 +214,7 @@ const ContentGenerator = () => {
     setGeneratedContent(content.content);
     setContentType(content.content_type);
     setTone(content.tone || "professional");
+    setCurrentTags(content.tags || []);
     setIsHistoryOpen(false);
     toast({
       title: "Content loaded",
@@ -257,6 +300,31 @@ const ContentGenerator = () => {
                         Your previously saved AI-generated content
                       </DialogDescription>
                     </DialogHeader>
+                    
+                    {/* Tag filter */}
+                    {allTags.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2 pb-2 border-b">
+                        <Filter className="h-4 w-4 text-muted-foreground" />
+                        <Button
+                          variant={filterTag === null ? "secondary" : "ghost"}
+                          size="sm"
+                          onClick={() => setFilterTag(null)}
+                        >
+                          All
+                        </Button>
+                        {allTags.map((tag) => (
+                          <Button
+                            key={tag}
+                            variant={filterTag === tag ? "secondary" : "ghost"}
+                            size="sm"
+                            onClick={() => setFilterTag(tag)}
+                          >
+                            {tag}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                    
                     <ScrollArea className="h-[400px] pr-4">
                       {isLoadingHistory ? (
                         <div className="flex items-center justify-center py-8">
@@ -265,7 +333,7 @@ const ContentGenerator = () => {
                       ) : savedContents.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
                           <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <p>No saved content yet</p>
+                          <p>{filterTag ? `No content with tag "${filterTag}"` : "No saved content yet"}</p>
                         </div>
                       ) : (
                         <div className="space-y-3">
@@ -279,6 +347,15 @@ const ContentGenerator = () => {
                                     <span>•</span>
                                     <span>{format(new Date(content.created_at), "MMM d, yyyy")}</span>
                                   </div>
+                                  {content.tags && content.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                      {content.tags.map((tag) => (
+                                        <Badge key={tag} variant="secondary" className="text-xs">
+                                          {tag}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  )}
                                   <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
                                     {content.content.slice(0, 150)}...
                                   </p>
@@ -372,6 +449,42 @@ const ContentGenerator = () => {
                         <SelectItem value="long">Long (800-1200 words)</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Tags input */}
+                  <div className="space-y-2">
+                    <Label htmlFor="tags">
+                      <Tag className="h-3 w-3 inline mr-1" />
+                      Tags (optional)
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="tags"
+                        placeholder="Add a tag..."
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleTagKeyDown}
+                      />
+                      <Button type="button" variant="outline" onClick={handleAddTag}>
+                        Add
+                      </Button>
+                    </div>
+                    {currentTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {currentTags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="gap-1">
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveTag(tag)}
+                              className="ml-1 hover:text-destructive"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <Button
