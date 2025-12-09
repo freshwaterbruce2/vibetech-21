@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check, StopCircle } from "lucide-react";
+import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check, StopCircle, Clock, FileType } from "lucide-react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -805,13 +805,26 @@ const ContentGenerator = () => {
                 </CardHeader>
                 <CardContent>
                   {generatedContent ? (
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <Textarea
-                        value={generatedContent}
-                        onChange={(e) => setGeneratedContent(e.target.value)}
-                        className="min-h-[400px] font-mono text-sm"
-                        readOnly={isLoading}
-                      />
+                    <div className="space-y-3">
+                      {/* Word count and reading time */}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground border-b pb-3">
+                        <div className="flex items-center gap-1.5">
+                          <FileType className="h-4 w-4" />
+                          <span>{generatedContent.trim().split(/\s+/).filter(Boolean).length} words</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="h-4 w-4" />
+                          <span>{Math.max(1, Math.ceil(generatedContent.trim().split(/\s+/).filter(Boolean).length / 200))} min read</span>
+                        </div>
+                      </div>
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <Textarea
+                          value={generatedContent}
+                          onChange={(e) => setGeneratedContent(e.target.value)}
+                          className="min-h-[400px] font-mono text-sm"
+                          readOnly={isLoading}
+                        />
+                      </div>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center h-[400px] text-muted-foreground">
