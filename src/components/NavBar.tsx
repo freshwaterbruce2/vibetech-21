@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { LogOut, LogIn } from "lucide-react";
+import { LogOut, LogIn, X, Menu } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type NavLink = {
@@ -24,6 +25,7 @@ const navLinks: NavLink[] = [
 ];
 
 const NavBar = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -43,26 +45,31 @@ const NavBar = () => {
       });
       navigate('/');
     }
+    setMobileMenuOpen(false);
+  };
+
+  const handleNavClick = () => {
+    setMobileMenuOpen(false);
   };
 
   return (
-    <header className="fixed w-full z-50 bg-aura-background/80 backdrop-blur-lg border-b border-aura-accent/10">
+    <header className="fixed w-full z-50 bg-background/80 backdrop-blur-lg border-b border-border/10">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <span className="text-xl font-bold font-heading bg-gradient-to-r from-aura-accent to-aura-accentSecondary bg-clip-text text-transparent">
+          <Link to="/" className="flex items-center" onClick={handleNavClick}>
+            <span className="text-xl font-bold font-heading bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Vibe Tech
             </span>
           </Link>
           
-          {/* Navigation */}
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className="text-white hover:text-aura-accent transition-colors"
+                className="text-foreground/80 hover:text-primary transition-colors"
               >
                 {link.label}
               </Link>
@@ -95,24 +102,69 @@ const NavBar = () => {
               </Button>
             )}
             
-            <button className="md:hidden text-white hover:text-aura-accent">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16m-7 6h7"
-                />
-              </svg>
+            {/* Mobile menu button */}
+            <button 
+              className="md:hidden text-foreground hover:text-primary p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Menu Panel */}
+      <div 
+        className={`fixed top-16 right-0 h-[calc(100vh-4rem)] w-72 bg-background border-l border-border z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
+          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <nav className="flex flex-col p-4 space-y-2">
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              onClick={handleNavClick}
+              className="px-4 py-3 text-foreground/80 hover:text-primary hover:bg-muted rounded-lg transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
+          
+          <div className="border-t border-border my-2 pt-2">
+            {user ? (
+              <button
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-2 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                onClick={handleNavClick}
+                className="flex items-center gap-2 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                <LogIn className="h-4 w-4" />
+                Login
+              </Link>
+            )}
+          </div>
+        </nav>
       </div>
     </header>
   );
