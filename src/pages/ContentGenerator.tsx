@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check, StopCircle, Clock, FileType, FileCode, FileDown, ChevronDown } from "lucide-react";
+import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check, StopCircle, Clock, FileType, FileCode, FileDown, ChevronDown, LayoutTemplate } from "lucide-react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -44,6 +44,98 @@ interface SavedContent {
   tags: string[];
   created_at: string;
 }
+
+interface ContentTemplate {
+  id: string;
+  name: string;
+  contentType: string;
+  topic: string;
+  tone: string;
+  description: string;
+}
+
+const CONTENT_TEMPLATES: ContentTemplate[] = [
+  {
+    id: "blog-how-to",
+    name: "How-To Guide",
+    contentType: "blog-post",
+    topic: "How to [achieve specific goal] in [timeframe]",
+    tone: "informative",
+    description: "Step-by-step tutorial format"
+  },
+  {
+    id: "blog-listicle",
+    name: "Listicle",
+    contentType: "blog-post",
+    topic: "10 [tips/ways/reasons] to [achieve goal]",
+    tone: "conversational",
+    description: "Numbered list of tips or ideas"
+  },
+  {
+    id: "social-promo",
+    name: "Product Launch",
+    contentType: "social-media",
+    topic: "Introducing [product name] - [key benefit]",
+    tone: "enthusiastic",
+    description: "Announcement post for new product"
+  },
+  {
+    id: "social-engagement",
+    name: "Engagement Post",
+    contentType: "social-media",
+    topic: "What's your favorite [topic]? Share in the comments!",
+    tone: "conversational",
+    description: "Question to drive engagement"
+  },
+  {
+    id: "email-welcome",
+    name: "Welcome Email",
+    contentType: "email",
+    topic: "Welcome to [brand] - Here's what to expect",
+    tone: "friendly",
+    description: "Onboarding email for new subscribers"
+  },
+  {
+    id: "email-promo",
+    name: "Promotional Email",
+    contentType: "email",
+    topic: "Limited time offer: [discount]% off [product/service]",
+    tone: "persuasive",
+    description: "Sales-focused email campaign"
+  },
+  {
+    id: "description-product",
+    name: "Product Description",
+    contentType: "product-description",
+    topic: "[Product name] - [category] for [target audience]",
+    tone: "professional",
+    description: "E-commerce product listing"
+  },
+  {
+    id: "description-service",
+    name: "Service Description",
+    contentType: "product-description",
+    topic: "[Service name] - Professional [service type]",
+    tone: "professional",
+    description: "Service offering description"
+  },
+  {
+    id: "ad-google",
+    name: "Google Ad Copy",
+    contentType: "ad-copy",
+    topic: "[Product/Service] - [Main benefit] | [Call to action]",
+    tone: "persuasive",
+    description: "Short-form search ad copy"
+  },
+  {
+    id: "ad-social",
+    name: "Social Media Ad",
+    contentType: "ad-copy",
+    topic: "Tired of [pain point]? Try [solution]",
+    tone: "enthusiastic",
+    description: "Attention-grabbing social ad"
+  }
+];
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-content`;
 
@@ -745,6 +837,52 @@ ${generatedContent
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* Templates Section */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1.5">
+                      <LayoutTemplate className="h-3.5 w-3.5" />
+                      Quick Templates
+                    </Label>
+                    <Select
+                      value=""
+                      onValueChange={(templateId) => {
+                        const template = CONTENT_TEMPLATES.find(t => t.id === templateId);
+                        if (template) {
+                          setTopic(template.topic);
+                          setContentType(template.contentType);
+                          setTone(template.tone);
+                          toast({
+                            title: "Template applied",
+                            description: `"${template.name}" template loaded. Customize the topic as needed.`,
+                          });
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a template to get started..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CONTENT_TEMPLATES.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">{template.name}</span>
+                              <span className="text-xs text-muted-foreground">{template.description}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">or customize</span>
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="topic">Topic or Subject</Label>
                     <Input
