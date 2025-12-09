@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { Mail } from "lucide-react";
+import { Mail, Check } from "lucide-react";
 interface NewsletterSubscribeProps {
   title?: string;
   description?: string;
@@ -16,6 +16,10 @@ const NewsletterSubscribe = ({
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
@@ -69,8 +73,11 @@ const NewsletterSubscribe = ({
               onChange={e => setEmail(e.target.value)} 
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              className="pl-10 pt-2" 
+              className="pl-10 pr-10 pt-2" 
             />
+            {isValidEmail(email) && (
+              <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
           </div>
           <Button type="submit" disabled={isLoading} className="bg-gradient-to-r from-aura-accent to-aura-accentSecondary hover:opacity-90 transition-opacity">
             {isLoading ? "Subscribing..." : "Subscribe"}
