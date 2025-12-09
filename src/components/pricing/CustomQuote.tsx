@@ -41,11 +41,11 @@ const CustomQuote = ({
       {/* Extra confidence builder */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto text-sm">
         <div className="flex flex-col items-center">
-          <div className="text-aura-accent text-xl font-bold mb-1">100%</div>
+          <div className="text-xl font-bold mb-1 text-primary">100%</div>
           <div className="text-white">Satisfaction Guarantee</div>
         </div>
         <div className="flex flex-col items-center">
-          <div className="text-aura-accent text-xl font-bold mb-1">24/7</div>
+          <div className="text-xl font-bold mb-1 text-primary">24/7</div>
           <div className="text-white">Customer Support</div>
         </div>
         <div className="flex flex-col items-center">
