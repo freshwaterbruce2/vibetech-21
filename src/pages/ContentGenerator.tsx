@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check, StopCircle, Clock, FileType, FileCode, FileDown, ChevronDown, LayoutTemplate } from "lucide-react";
+import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check, StopCircle, Clock, FileType, FileCode, FileDown, ChevronDown, LayoutTemplate, Plus, BookmarkPlus } from "lucide-react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -42,6 +42,17 @@ interface SavedContent {
   content_type: string;
   tone: string;
   tags: string[];
+  created_at: string;
+}
+
+interface UserTemplate {
+  id: string;
+  user_id: string;
+  name: string;
+  content_type: string;
+  topic: string;
+  tone: string;
+  description: string | null;
   created_at: string;
 }
 
@@ -167,6 +178,135 @@ const ContentGenerator = () => {
   const [editTags, setEditTags] = useState<string[]>([]);
   const [editTagInput, setEditTagInput] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Custom templates state
+  const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
+  const [isSaveTemplateOpen, setIsSaveTemplateOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+
+  // Fetch user templates
+  const fetchUserTemplates = async () => {
+    if (!user) return;
+    setIsLoadingTemplates(true);
+    try {
+      const { data, error } = await supabase
+        .from("user_templates")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setUserTemplates(data || []);
+    } catch (error: any) {
+      console.error("Error fetching templates:", error);
+    } finally {
+      setIsLoadingTemplates(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchUserTemplates();
+    }
+  }, [user]);
+
+  const handleSaveTemplate = async () => {
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please log in to save templates.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    if (!templateName.trim()) {
+      toast({
+        title: "Name required",
+        description: "Please enter a name for your template.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!topic.trim()) {
+      toast({
+        title: "Topic required",
+        description: "Please enter a topic before saving as template.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingTemplate(true);
+    try {
+      const { data, error } = await supabase.from("user_templates").insert({
+        user_id: user.id,
+        name: templateName,
+        content_type: contentType,
+        topic: topic,
+        tone: tone,
+        description: templateDescription || null,
+      }).select().single();
+
+      if (error) throw error;
+
+      setUserTemplates(prev => [data, ...prev]);
+      setIsSaveTemplateOpen(false);
+      setTemplateName("");
+      setTemplateDescription("");
+
+      toast({
+        title: "Template saved!",
+        description: "Your custom template has been saved.",
+      });
+    } catch (error: any) {
+      console.error("Save template error:", error);
+      toast({
+        title: "Save failed",
+        description: error.message || "Failed to save template.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    try {
+      const { error } = await supabase.from("user_templates").delete().eq("id", id);
+
+      if (error) throw error;
+
+      setUserTemplates(prev => prev.filter(t => t.id !== id));
+      toast({
+        title: "Template deleted",
+        description: "Your template has been removed.",
+      });
+    } catch (error: any) {
+      console.error("Delete template error:", error);
+      toast({
+        title: "Delete failed",
+        description: error.message || "Failed to delete template.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const applyTemplate = (template: ContentTemplate | UserTemplate) => {
+    setTopic(template.topic);
+    const cType = 'contentType' in template ? template.contentType : template.content_type;
+    setContentType(cType);
+    setTone(template.tone);
+    toast({
+      title: "Template applied",
+      description: `"${template.name}" template loaded. Customize the topic as needed.`,
+    });
+  };
 
   const fetchSavedContent = async () => {
     if (!user) return;
@@ -838,23 +978,82 @@ ${generatedContent
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Templates Section */}
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-1.5">
-                      <LayoutTemplate className="h-3.5 w-3.5" />
-                      Quick Templates
-                    </Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="flex items-center gap-1.5">
+                        <LayoutTemplate className="h-3.5 w-3.5" />
+                        Templates
+                      </Label>
+                      {user && topic.trim() && (
+                        <Dialog open={isSaveTemplateOpen} onOpenChange={setIsSaveTemplateOpen}>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-7 text-xs">
+                              <BookmarkPlus className="h-3 w-3 mr-1" />
+                              Save as Template
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Save Custom Template</DialogTitle>
+                              <DialogDescription>
+                                Save your current settings as a reusable template
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 pt-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="template-name">Template Name</Label>
+                                <Input
+                                  id="template-name"
+                                  placeholder="e.g., Weekly Newsletter"
+                                  value={templateName}
+                                  onChange={(e) => setTemplateName(e.target.value)}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="template-desc">Description (optional)</Label>
+                                <Input
+                                  id="template-desc"
+                                  placeholder="Brief description of this template"
+                                  value={templateDescription}
+                                  onChange={(e) => setTemplateDescription(e.target.value)}
+                                />
+                              </div>
+                              <div className="p-3 rounded-lg bg-muted/50 text-sm space-y-1">
+                                <p><span className="text-muted-foreground">Topic:</span> {topic}</p>
+                                <p><span className="text-muted-foreground">Type:</span> {contentType}</p>
+                                <p><span className="text-muted-foreground">Tone:</span> {tone}</p>
+                              </div>
+                              <Button 
+                                onClick={handleSaveTemplate} 
+                                disabled={isSavingTemplate || !templateName.trim()}
+                                className="w-full"
+                              >
+                                {isSavingTemplate ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <Save className="h-4 w-4 mr-2" />
+                                )}
+                                Save Template
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
+                    
                     <Select
                       value=""
                       onValueChange={(templateId) => {
-                        const template = CONTENT_TEMPLATES.find(t => t.id === templateId);
-                        if (template) {
-                          setTopic(template.topic);
-                          setContentType(template.contentType);
-                          setTone(template.tone);
-                          toast({
-                            title: "Template applied",
-                            description: `"${template.name}" template loaded. Customize the topic as needed.`,
-                          });
+                        // Check built-in templates first
+                        const builtIn = CONTENT_TEMPLATES.find(t => t.id === templateId);
+                        if (builtIn) {
+                          applyTemplate(builtIn);
+                          return;
+                        }
+                        // Check user templates
+                        const userTemplate = userTemplates.find(t => t.id === templateId);
+                        if (userTemplate) {
+                          applyTemplate(userTemplate);
                         }
                       }}
                     >
@@ -862,6 +1061,29 @@ ${generatedContent
                         <SelectValue placeholder="Select a template to get started..." />
                       </SelectTrigger>
                       <SelectContent>
+                        {userTemplates.length > 0 && (
+                          <>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                              My Templates
+                            </div>
+                            {userTemplates.map((template) => (
+                              <div key={template.id} className="flex items-center group">
+                                <SelectItem value={template.id} className="flex-1">
+                                  <div className="flex flex-col items-start">
+                                    <span className="font-medium">{template.name}</span>
+                                    {template.description && (
+                                      <span className="text-xs text-muted-foreground">{template.description}</span>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              </div>
+                            ))}
+                            <div className="my-1 border-t" />
+                          </>
+                        )}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                          Built-in Templates
+                        </div>
                         {CONTENT_TEMPLATES.map((template) => (
                           <SelectItem key={template.id} value={template.id}>
                             <div className="flex flex-col items-start">
@@ -872,6 +1094,32 @@ ${generatedContent
                         ))}
                       </SelectContent>
                     </Select>
+
+                    {/* Manage user templates */}
+                    {user && userTemplates.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {userTemplates.map((template) => (
+                          <Badge 
+                            key={template.id} 
+                            variant="secondary" 
+                            className="gap-1 cursor-pointer hover:bg-secondary/80"
+                            onClick={() => applyTemplate(template)}
+                          >
+                            {template.name}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTemplate(template.id);
+                              }}
+                              className="ml-1 hover:text-destructive"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="relative">
