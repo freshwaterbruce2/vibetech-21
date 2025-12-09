@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter } from "lucide-react";
+import { Sparkles, Copy, Download, Loader2, Save, History, Trash2, FileText, X, Tag, Filter, Pencil, Check } from "lucide-react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -59,6 +59,13 @@ const ContentGenerator = () => {
   const [tagInput, setTagInput] = useState("");
   const [allTags, setAllTags] = useState<string[]>([]);
   const [filterTag, setFilterTag] = useState<string | null>(null);
+  
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const [editTagInput, setEditTagInput] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchSavedContent = async () => {
     if (!user) return;
@@ -115,6 +122,86 @@ const ContentGenerator = () => {
     if (e.key === "Enter") {
       e.preventDefault();
       handleAddTag();
+    }
+  };
+
+  // Edit functions
+  const startEditing = (content: SavedContent) => {
+    setEditingId(content.id);
+    setEditTitle(content.title);
+    setEditTags(content.tags || []);
+    setEditTagInput("");
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditTitle("");
+    setEditTags([]);
+    setEditTagInput("");
+  };
+
+  const handleAddEditTag = () => {
+    const tag = editTagInput.trim().toLowerCase();
+    if (tag && !editTags.includes(tag)) {
+      setEditTags([...editTags, tag]);
+      setEditTagInput("");
+    }
+  };
+
+  const handleRemoveEditTag = (tagToRemove: string) => {
+    setEditTags(editTags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleEditTagKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddEditTag();
+    }
+  };
+
+  const saveEdit = async () => {
+    if (!editingId || !editTitle.trim()) return;
+
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("saved_content")
+        .update({ title: editTitle, tags: editTags })
+        .eq("id", editingId);
+
+      if (error) throw error;
+
+      setSavedContents((prev) =>
+        prev.map((c) =>
+          c.id === editingId ? { ...c, title: editTitle, tags: editTags } : c
+        )
+      );
+
+      // Update allTags
+      const tags = new Set<string>();
+      savedContents.forEach((content) => {
+        if (content.id === editingId) {
+          editTags.forEach((tag) => tags.add(tag));
+        } else {
+          content.tags?.forEach((tag) => tags.add(tag));
+        }
+      });
+      setAllTags(Array.from(tags).sort());
+
+      toast({
+        title: "Content updated",
+        description: "Title and tags have been saved.",
+      });
+      cancelEditing();
+    } catch (error: any) {
+      console.error("Update error:", error);
+      toast({
+        title: "Update failed",
+        description: error.message || "Failed to update content.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -286,7 +373,10 @@ const ContentGenerator = () => {
               </p>
               
               {user && (
-                <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+                <Dialog open={isHistoryOpen} onOpenChange={(open) => {
+                  setIsHistoryOpen(open);
+                  if (!open) cancelEditing();
+                }}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="mt-4">
                       <History className="mr-2 h-4 w-4" />
@@ -339,44 +429,113 @@ const ContentGenerator = () => {
                         <div className="space-y-3">
                           {savedContents.map((content) => (
                             <Card key={content.id} className="p-4">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium truncate">{content.title}</h4>
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                                    <span className="capitalize">{contentTypeLabels[content.content_type] || content.content_type}</span>
-                                    <span>•</span>
-                                    <span>{format(new Date(content.created_at), "MMM d, yyyy")}</span>
+                              {editingId === content.id ? (
+                                // Edit mode
+                                <div className="space-y-3">
+                                  <div className="space-y-2">
+                                    <Label htmlFor={`edit-title-${content.id}`}>Title</Label>
+                                    <Input
+                                      id={`edit-title-${content.id}`}
+                                      value={editTitle}
+                                      onChange={(e) => setEditTitle(e.target.value)}
+                                      placeholder="Content title"
+                                    />
                                   </div>
-                                  {content.tags && content.tags.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-2">
-                                      {content.tags.map((tag) => (
-                                        <Badge key={tag} variant="secondary" className="text-xs">
-                                          {tag}
-                                        </Badge>
-                                      ))}
+                                  <div className="space-y-2">
+                                    <Label>Tags</Label>
+                                    <div className="flex gap-2">
+                                      <Input
+                                        placeholder="Add a tag..."
+                                        value={editTagInput}
+                                        onChange={(e) => setEditTagInput(e.target.value)}
+                                        onKeyDown={handleEditTagKeyDown}
+                                      />
+                                      <Button type="button" variant="outline" size="sm" onClick={handleAddEditTag}>
+                                        Add
+                                      </Button>
                                     </div>
-                                  )}
-                                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                                    {content.content.slice(0, 150)}...
-                                  </p>
+                                    {editTags.length > 0 && (
+                                      <div className="flex flex-wrap gap-1 mt-2">
+                                        {editTags.map((tag) => (
+                                          <Badge key={tag} variant="secondary" className="gap-1">
+                                            {tag}
+                                            <button
+                                              type="button"
+                                              onClick={() => handleRemoveEditTag(tag)}
+                                              className="ml-1 hover:text-destructive"
+                                            >
+                                              <X className="h-3 w-3" />
+                                            </button>
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex gap-2 justify-end">
+                                    <Button variant="ghost" size="sm" onClick={cancelEditing}>
+                                      Cancel
+                                    </Button>
+                                    <Button size="sm" onClick={saveEdit} disabled={isUpdating}>
+                                      {isUpdating ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <>
+                                          <Check className="mr-1 h-4 w-4" />
+                                          Save
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
                                 </div>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleLoadContent(content)}
-                                  >
-                                    Load
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => handleDeleteContent(content.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                  </Button>
+                              ) : (
+                                // View mode
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-medium truncate">{content.title}</h4>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                      <span className="capitalize">{contentTypeLabels[content.content_type] || content.content_type}</span>
+                                      <span>•</span>
+                                      <span>{format(new Date(content.created_at), "MMM d, yyyy")}</span>
+                                    </div>
+                                    {content.tags && content.tags.length > 0 && (
+                                      <div className="flex flex-wrap gap-1 mt-2">
+                                        {content.tags.map((tag) => (
+                                          <Badge key={tag} variant="secondary" className="text-xs">
+                                            {tag}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    )}
+                                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                                      {content.content.slice(0, 150)}...
+                                    </p>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => startEditing(content)}
+                                      title="Edit"
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleLoadContent(content)}
+                                    >
+                                      Load
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleDeleteContent(content.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
                             </Card>
                           ))}
                         </div>
