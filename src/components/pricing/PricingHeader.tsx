@@ -1,15 +1,26 @@
 
-import React from "react";
+import React, { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 import PageHeader from "@/components/ui/page-header";
 import { motion } from "framer-motion";
+import { Users, TrendingUp, Star, Sparkles } from "lucide-react";
+import { pricingStats } from "./pricingData";
 
 interface PricingHeaderProps {
   billingCycle: "monthly" | "yearly";
   setBillingCycle: (cycle: "monthly" | "yearly") => void;
 }
 
-const PricingHeader = ({ billingCycle, setBillingCycle }: PricingHeaderProps) => {
+const StatBadge = memo(({ icon: Icon, value, label }: { icon: React.ElementType; value: string; label: string }) => (
+  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/30 backdrop-blur-sm border border-border/20">
+    <Icon className="h-4 w-4 text-primary" />
+    <span className="text-sm font-medium text-foreground">{value}</span>
+    <span className="text-xs text-muted-foreground">{label}</span>
+  </div>
+));
+StatBadge.displayName = 'StatBadge';
+
+const PricingHeader = memo(({ billingCycle, setBillingCycle }: PricingHeaderProps) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: -20 }}
@@ -18,15 +29,23 @@ const PricingHeader = ({ billingCycle, setBillingCycle }: PricingHeaderProps) =>
       className="mb-16"
     >
       <PageHeader
-        title="Pricing Made Simple"
-        subtitle="Professional web design services at competitive rates. Get more value than DIY platforms with the quality of agency work at a fraction of the price."
+        title="AI-Powered Pricing for 2025"
+        subtitle="Get enterprise-grade AI features at startup-friendly prices. Our plans include AI agents, automation, and dedicated support."
         className="text-white"
       />
       
+      {/* Stats bar */}
+      <div className="flex flex-wrap justify-center gap-3 mb-8">
+        <StatBadge icon={Users} value={`${pricingStats.totalCustomers.toLocaleString()}+`} label="customers" />
+        <StatBadge icon={TrendingUp} value={pricingStats.avgSavings} label="avg savings" />
+        <StatBadge icon={Star} value={`${pricingStats.satisfactionRate}%`} label="satisfaction" />
+      </div>
+      
       {/* Value proposition */}
       <div className="flex justify-center mb-8">
-        <Badge variant="outline" className="px-4 py-2 bg-aura-accent/10 text-aura-accent border-aura-accent/30 text-sm text-white">
-          Higher quality than DIY platforms, more affordable than agencies
+        <Badge variant="outline" className="px-4 py-2 bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-sm flex items-center gap-2">
+          <Sparkles className="h-4 w-4" />
+          AI features included in all plans — no hidden fees
         </Badge>
       </div>
       
@@ -49,7 +68,7 @@ const PricingHeader = ({ billingCycle, setBillingCycle }: PricingHeaderProps) =>
           </button>
           <span className={`ml-3 flex items-center ${billingCycle === "yearly" ? "text-white font-medium" : "text-white/70"}`}>
             Yearly 
-            <Badge className="ml-1 bg-aura-accent/10 text-aura-accent border-aura-accent/30 text-white">Save 20%</Badge>
+            <Badge className="ml-2 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Save 23%</Badge>
           </span>
         </div>
         
@@ -57,14 +76,20 @@ const PricingHeader = ({ billingCycle, setBillingCycle }: PricingHeaderProps) =>
           <motion.p 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-sm text-aura-accent"
+            className="text-sm text-emerald-400"
           >
-            You're saving up to $360 per year!
+            You're saving up to $720 per year!
           </motion.p>
         )}
       </div>
+      
+      <p className="text-center text-xs text-muted-foreground mt-6">
+        Pricing as of {pricingStats.lastUpdated}
+      </p>
     </motion.div>
   );
-};
+});
+
+PricingHeader.displayName = 'PricingHeader';
 
 export default PricingHeader;

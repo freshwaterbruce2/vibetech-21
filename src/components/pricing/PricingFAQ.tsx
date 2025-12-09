@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import {
   Accordion,
@@ -9,28 +10,32 @@ import {
 
 const faqItems = [
   {
-    question: "How do your prices compare to freelancers?",
-    answer: "While freelancer rates typically range from $30-150 per hour (often resulting in unpredictable project costs), our subscription model provides consistent, professional service at a fixed monthly rate. This eliminates surprise costs and ensures ongoing support."
+    question: "What AI features are included in each plan?",
+    answer: "All plans include AI-optimized design and smart contact forms. Professional and Enterprise tiers add AI Content Assistant for generating marketing copy and blog posts, plus a Custom AI Chatbot for 24/7 customer support. Enterprise includes advanced predictive analytics powered by AI."
   },
   {
-    question: "Why choose your service over DIY platforms?",
-    answer: "DIY platforms like Wix or Squarespace ($14-39/month) offer templates but lack professional design expertise. Our service includes custom professional design, development, and ongoing support at competitive rates, resulting in a higher-quality, unique website that truly represents your brand."
+    question: "How do your 2025 prices compare to agencies?",
+    answer: "In 2025, the average agency charges $150-250/hour for AI-integrated web development. Our subscription model provides the same AI capabilities at a fixed monthly rate — typically 65-70% less than agency retainers. Plus, you get ongoing support and updates included."
+  },
+  {
+    question: "Why choose Vibe Tech over DIY AI platforms?",
+    answer: "DIY platforms like Wix ADI or Squarespace AI ($29-79/month) offer generic AI templates. We provide custom AI agents trained on your brand, dedicated development expertise, and hands-on support. Our AI features are enterprise-grade, not cookie-cutter."
   },
   {
     question: "Can I upgrade or downgrade my plan?",
-    answer: "Yes, you can upgrade or downgrade your plan at any time. If you upgrade, you'll be charged the prorated difference for the remainder of your billing cycle. If you downgrade, the new rate will apply at the start of your next billing cycle."
+    answer: "Yes, you can switch plans at any time. Upgrades take effect immediately with prorated billing. Downgrades apply at the start of your next billing cycle. Your data and AI training are preserved across plan changes."
   },
   {
-    question: "Is there a setup fee or contract?",
-    answer: "No, we don't charge any setup fees and there are no long-term contracts. You can cancel your subscription at any time without penalty."
+    question: "Is there a setup fee or long-term contract?",
+    answer: "No setup fees, no long-term contracts. Cancel anytime without penalty. We believe in earning your business every month through results, not locking you into commitments."
   },
   {
-    question: "What happens if I need additional services?",
-    answer: "If you need services beyond what's included in your plan, we offer custom quotes for additional work. Our team will assess your requirements and provide transparent pricing before any work begins."
+    question: "What kind of ROI can I expect?",
+    answer: "Our customers see an average ROI of 5.8x on the Professional plan within 6 months. This comes from improved lead conversion (AI chatbots), faster content production (AI assistant), and better Core Web Vitals scores driving organic traffic."
   }
 ];
 
-const PricingFAQ = () => {
+const PricingFAQ = memo(() => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -66,6 +71,8 @@ const PricingFAQ = () => {
       </div>
     </motion.div>
   );
-};
+});
+
+PricingFAQ.displayName = 'PricingFAQ';
 
 export default PricingFAQ;

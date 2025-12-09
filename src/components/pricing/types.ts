@@ -10,6 +10,7 @@ export type PricingTier = {
     text: string;
     included: boolean;
     tooltip?: string;
+    isNew?: boolean;
   }[];
   comparisons?: {
     text: string;
@@ -18,6 +19,10 @@ export type PricingTier = {
   highlighted?: boolean;
   badge?: string;
   cta: string;
+  stats?: {
+    activeUsers?: number;
+    avgRoi?: string;
+  };
 };
 
 export type MarketComparisonType = {
@@ -26,4 +31,11 @@ export type MarketComparisonType = {
   pricing: string;
   limitations: string;
   highlighted?: boolean;
+};
+
+export type PricingStats = {
+  totalCustomers: number;
+  avgSavings: string;
+  satisfactionRate: number;
+  lastUpdated: string;
 };
