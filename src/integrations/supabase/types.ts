@@ -158,6 +158,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_templates: {
+        Row: {
+          content_type: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          tone: string
+          topic: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          tone: string
+          topic: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          tone?: string
+          topic?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
