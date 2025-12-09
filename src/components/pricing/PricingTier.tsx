@@ -1,8 +1,9 @@
 
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Info, ArrowRight } from "lucide-react";
+import { Check, X, Info, ArrowRight, Users, TrendingUp, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   Tooltip,
@@ -19,7 +20,7 @@ interface PricingTierProps {
   onSubscribe: (plan: string) => void;
 }
 
-const PricingTier = ({ tier, billingCycle, index, onSubscribe }: PricingTierProps) => {
+const PricingTier = memo(({ tier, billingCycle, index, onSubscribe }: PricingTierProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -47,6 +48,20 @@ const PricingTier = ({ tier, billingCycle, index, onSubscribe }: PricingTierProp
             <span className="text-white ml-1">/ month</span>
           </div>
           <CardDescription className="mt-2 text-white">{tier.description}</CardDescription>
+          
+          {/* Stats row */}
+          {tier.stats && (
+            <div className="flex gap-4 mt-3 pt-3 border-t border-border/20">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Users className="h-3 w-3" />
+                <span>{tier.stats.activeUsers.toLocaleString()} active</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-emerald-400">
+                <TrendingUp className="h-3 w-3" />
+                <span>{tier.stats.avgRoi} avg ROI</span>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="flex-grow">
           <ul className="space-y-3">
@@ -57,8 +72,14 @@ const PricingTier = ({ tier, billingCycle, index, onSubscribe }: PricingTierProp
                 ) : (
                   <X className="h-5 w-5 text-gray-400 shrink-0 mt-0.5" />
                 )}
-                <span className={!feature.included ? "text-white/70" : "text-white"}>
+                <span className={`flex items-center gap-1 ${!feature.included ? "text-white/70" : "text-white"}`}>
                   {feature.text}
+                  {feature.isNew && (
+                    <Badge className="ml-1 px-1.5 py-0 text-[10px] bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                      <Sparkles className="h-2.5 w-2.5 mr-0.5" />
+                      New
+                    </Badge>
+                  )}
                   {feature.tooltip && (
                     <TooltipProvider>
                       <Tooltip>
@@ -79,7 +100,7 @@ const PricingTier = ({ tier, billingCycle, index, onSubscribe }: PricingTierProp
           {/* Market comparison points */}
           {tier.comparisons && (
             <div className="mt-6 pt-4 border-t border-[color:var(--c-purple)/20]">
-              <h4 className="font-medium text-sm mb-3 text-[#8d4dff]">Market Comparison</h4>
+              <h4 className="font-medium text-sm mb-3 text-[#8d4dff]">2025 Market Comparison</h4>
               <ul className="space-y-2">
                 {tier.comparisons.map((comparison, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm">
@@ -118,6 +139,8 @@ const PricingTier = ({ tier, billingCycle, index, onSubscribe }: PricingTierProp
       </Card>
     </motion.div>
   );
-};
+});
+
+PricingTier.displayName = 'PricingTier';
 
 export default PricingTier;
