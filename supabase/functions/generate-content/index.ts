@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const { type, topic, tone, length } = await req.json();
     
-    console.log("Generating content:", { type, topic, tone, length });
+    console.log("Generating content (streaming):", { type, topic, tone, length });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -61,6 +61,7 @@ Make it engaging and valuable for the reader.`;
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
+        stream: true,
       }),
     });
 
@@ -84,13 +85,15 @@ Make it engaging and valuable for the reader.`;
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
-    const data = await response.json();
-    const generatedContent = data.choices?.[0]?.message?.content;
+    console.log("Streaming response started");
 
-    console.log("Content generated successfully");
-
-    return new Response(JSON.stringify({ content: generatedContent }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    // Return the stream directly
+    return new Response(response.body, {
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+      },
     });
   } catch (error) {
     console.error("Error in generate-content function:", error);
