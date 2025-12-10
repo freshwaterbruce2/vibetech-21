@@ -9,6 +9,9 @@ import DashboardContent from "@/components/dashboard/DashboardContent";
 import { Toaster } from "@/components/ui/toaster";
 import { useEffect } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Badge } from "@/components/ui/badge";
+import { Shield } from "lucide-react";
 
 const Dashboard = () => {
   const {
@@ -25,6 +28,7 @@ const Dashboard = () => {
   } = useDashboardData();
   
   const { trackEvent } = useAnalytics();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   
   // Track dashboard page view ONCE on mount only
   useEffect(() => {
@@ -60,8 +64,18 @@ const Dashboard = () => {
         className="max-w-7xl mx-auto px-4 pt-24 relative z-10"
         variants={containerVariants}
         initial="hidden"
-        animate={!isLoading ? "visible" : "hidden"}
+        animate={!isLoading && !roleLoading ? "visible" : "hidden"}
       >
+        {/* Admin Badge */}
+        {isAdmin && (
+          <div className="mb-4 flex items-center gap-2">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 flex items-center gap-1.5 px-3 py-1">
+              <Shield className="h-3.5 w-3.5" />
+              Admin Access
+            </Badge>
+          </div>
+        )}
+        
         <DashboardTopbar 
           onRefresh={loadDashboardData} 
           isPro={isPro} 
