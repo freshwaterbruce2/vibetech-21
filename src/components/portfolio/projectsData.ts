@@ -1,5 +1,12 @@
+import { Project, PortfolioStats } from "./types";
 
-import { Project } from "./types";
+// December 2025 Portfolio Statistics
+export const portfolioStats: PortfolioStats = {
+  projectsCompleted: 47,
+  clientSatisfaction: "98%",
+  avgLoadTime: "0.8s",
+  repeatClients: "72%",
+};
 
 export const projects: Project[] = [
   {
@@ -8,7 +15,10 @@ export const projects: Project[] = [
     category: "Web App",
     description: "A modern hotel booking platform with advanced search capabilities, date selection, guest management, and environment preferences. Features a clean, intuitive interface with real-time availability and booking management.",
     image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1800&auto=format",
-    tags: ["React", "TypeScript", "Tailwind CSS", "Date Picker"]
+    tags: ["React", "TypeScript", "Tailwind CSS", "AI-Powered"],
+    stats: { performance: 98, users: "12K+", uptime: "99.9%" },
+    trending: true,
+    completedDate: "December 2025",
   },
   {
     id: 2,
@@ -16,7 +26,10 @@ export const projects: Project[] = [
     category: "Web App",
     description: "A comprehensive rental property listing platform where landlords can list properties free of charge and renters can discover perfect rental properties that match their lifestyle. Features advanced search, property browsing, and listing management.",
     image: "/lovable-uploads/0930ed3b-7a63-492d-87c3-9a547af4aa27.png",
-    tags: ["React", "TypeScript", "Property Search", "Rental Management"]
+    tags: ["React", "TypeScript", "Edge Computing", "Real-time"],
+    stats: { performance: 96, users: "8K+", uptime: "99.8%" },
+    trending: true,
+    completedDate: "November 2025",
   },
   {
     id: 3,
@@ -24,7 +37,10 @@ export const projects: Project[] = [
     category: "Web App",
     description: "A modern analytics dashboard with real-time data visualization features, AI-powered insights, and customizable widgets for enterprise performance monitoring.",
     image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1800&auto=format",
-    tags: ["React", "TypeScript", "Tailwind CSS", "Chart.js"]
+    tags: ["React", "TypeScript", "AI Agents", "Chart.js"],
+    stats: { performance: 99, users: "5K+", uptime: "99.99%" },
+    trending: true,
+    completedDate: "October 2025",
   },
   {
     id: 4,
@@ -32,7 +48,9 @@ export const projects: Project[] = [
     category: "Mobile App",
     description: "A cross-platform mobile application for productivity tracking with habit formation analytics, goal setting capabilities, and smart notification systems.",
     image: "https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?q=80&w=1800&auto=format",
-    tags: ["React Native", "Firebase", "Redux", "Node.js"]
+    tags: ["React Native", "Firebase", "AI-First", "Node.js"],
+    stats: { performance: 95, users: "20K+", uptime: "99.7%" },
+    completedDate: "September 2025",
   },
   {
     id: 5,
@@ -40,7 +58,9 @@ export const projects: Project[] = [
     category: "Web App",
     description: "An AI-powered music generation platform with collaborative features, allowing users to create, edit, and share unique musical compositions across multiple genres.",
     image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=1800&auto=format",
-    tags: ["Vue.js", "Web Audio API", "TensorFlow.js", "Express"]
+    tags: ["Vue.js", "Generative AI", "TensorFlow.js", "Edge-Native"],
+    stats: { performance: 94, users: "15K+", uptime: "99.5%" },
+    completedDate: "August 2025",
   },
   {
     id: 6,
@@ -48,7 +68,9 @@ export const projects: Project[] = [
     category: "Website",
     description: "A space-themed educational platform for teaching astronomy concepts with interactive 3D models of celestial bodies, real-time space data integration, and virtual tours.",
     image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1800&auto=format",
-    tags: ["HTML/CSS", "JavaScript", "Three.js", "WebGL"]
+    tags: ["Three.js", "WebGL", "WebXR", "Real-time 3D"],
+    stats: { performance: 92, users: "30K+", uptime: "99.6%" },
+    completedDate: "July 2025",
   },
   {
     id: 7,
@@ -56,7 +78,9 @@ export const projects: Project[] = [
     category: "IoT",
     description: "Smart home system with customizable automation and voice control capabilities, featuring energy optimization, security protocols, and seamless device integration.",
     image: "https://images.unsplash.com/photo-1558002038-1055907df827?q=80&w=1800&auto=format",
-    tags: ["IoT", "Node.js", "MQTT", "Raspberry Pi"]
+    tags: ["IoT", "Edge Computing", "Zero-Trust", "MQTT"],
+    stats: { performance: 97, users: "3K+", uptime: "99.95%" },
+    completedDate: "June 2025",
   },
   {
     id: 8,
@@ -64,6 +88,8 @@ export const projects: Project[] = [
     category: "Website",
     description: "Corporate website with custom CMS and interactive elements, including animated data visualizations, seamless scrolling experiences, and integrated customer support.",
     image: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1800&auto=format",
-    tags: ["WordPress", "PHP", "GSAP", "MySQL"]
-  }
+    tags: ["Headless CMS", "GSAP", "Serverless", "JAMstack"],
+    stats: { performance: 96, users: "50K+", uptime: "99.8%" },
+    completedDate: "May 2025",
+  },
 ];
