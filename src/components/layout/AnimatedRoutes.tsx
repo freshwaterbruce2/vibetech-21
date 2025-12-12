@@ -23,6 +23,7 @@ const Services = lazy(() => import('../../pages/Services'));
 const Tools = lazy(() => import('../../pages/Tools'));
 const About = lazy(() => import('../../pages/About'));
 const ContentGenerator = lazy(() => import('../../pages/ContentGenerator'));
+const Terms = lazy(() => import('../../pages/Terms'));
 
 // Loading component for suspense fallback
 const PageLoader = () => (
@@ -58,6 +59,7 @@ const AnimatedRoutes = () => {
           <Route path="/tools" element={<PageTransition><Tools /></PageTransition>} />
           <Route path="/about" element={<PageTransition><About /></PageTransition>} />
           <Route path="/content-generator" element={<PageTransition><ContentGenerator /></PageTransition>} />
+          <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </Suspense>
