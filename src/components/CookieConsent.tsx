@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { X, Cookie, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const COOKIE_CONSENT_KEY = 'vibe-tech-cookie-consent';
+export const COOKIE_CONSENT_REOPEN_EVENT = 'vibe-tech-reopen-cookie-consent';
 
 interface CookiePreferences {
   essential: boolean;
@@ -21,6 +22,22 @@ const CookieConsent: React.FC = () => {
     marketing: false,
   });
 
+  const openBanner = useCallback(() => {
+    // Load existing preferences if available
+    const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
+    if (consent) {
+      try {
+        const parsed = JSON.parse(consent);
+        if (parsed.preferences) {
+          setPreferences(parsed.preferences);
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+    setIsVisible(true);
+  }, []);
+
   useEffect(() => {
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {
@@ -29,6 +46,13 @@ const CookieConsent: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // Listen for reopen event
+  useEffect(() => {
+    const handleReopen = () => openBanner();
+    window.addEventListener(COOKIE_CONSENT_REOPEN_EVENT, handleReopen);
+    return () => window.removeEventListener(COOKIE_CONSENT_REOPEN_EVENT, handleReopen);
+  }, [openBanner]);
 
   const handleAcceptAll = () => {
     const allAccepted: CookiePreferences = {
