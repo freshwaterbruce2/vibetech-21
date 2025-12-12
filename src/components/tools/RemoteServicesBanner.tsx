@@ -33,7 +33,7 @@ const RemoteServicesBanner = () => {
         </SectionHeading>
         
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <p className="text-lg text-aura-textSecondary">
+          <p className="text-lg text-muted-foreground">
             Don't have time to implement these tools yourself? Our team provides remote integration services to set up and optimize these tools for your specific needs.
           </p>
         </div>
@@ -49,8 +49,8 @@ const RemoteServicesBanner = () => {
                   <div className="mb-5 flex items-center justify-center w-16 h-16 rounded-full bg-aura-backgroundLight/40">
                     {service.icon}
                   </div>
-                  <h3 className="text-xl font-semibold mb-3 font-heading">{service.title}</h3>
-                  <p className="text-aura-textSecondary">{service.description}</p>
+                  <h3 className="text-xl font-semibold mb-3 font-heading text-foreground">{service.title}</h3>
+                  <p className="text-muted-foreground">{service.description}</p>
                 </div>
               </FuturisticCard>
             </AnimateOnScroll>
