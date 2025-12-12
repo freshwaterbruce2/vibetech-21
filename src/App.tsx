@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { useEffect } from 'react';
 import { useAnalytics } from './hooks/useAnalytics';
 import AnimatedRoutes from './components/layout/AnimatedRoutes';
+import CookieConsent from './components/CookieConsent';
 
 // ScrollToTop component to handle scrolling to top on route change
 const ScrollToTop: React.FC = () => {
@@ -73,6 +74,7 @@ const App: React.FC = () => {
       <div className="dashboard-bg min-h-screen">
         <AnimatedRoutes />
         <Toaster />
+        <CookieConsent />
       </div>
     </Router>
   );
