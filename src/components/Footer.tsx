@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
 import NewsletterSubscribe from "./NewsletterSubscribe";
+import { COOKIE_CONSENT_REOPEN_EVENT } from "./CookieConsent";
 import { 
   socialLinks, 
   contactMethods, 
@@ -50,6 +51,10 @@ const ContactItem = memo(({ method }: { method: typeof contactMethods[0] }) => {
 ContactItem.displayName = 'ContactItem';
 
 const Footer = memo(() => {
+  const handleManageCookies = () => {
+    window.dispatchEvent(new Event(COOKIE_CONSENT_REOPEN_EVENT));
+  };
+
   return (
     <footer className="border-t border-border/10 mt-auto py-12 relative z-10 bg-background/50 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4">
@@ -136,6 +141,12 @@ const Footer = memo(() => {
             <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors text-sm">
               Terms of Service
             </Link>
+            <button 
+              onClick={handleManageCookies}
+              className="text-muted-foreground hover:text-primary transition-colors text-sm"
+            >
+              Manage Cookies
+            </button>
             <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm">
               Contact
             </Link>
