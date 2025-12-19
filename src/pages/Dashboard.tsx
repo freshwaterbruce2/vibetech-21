@@ -93,7 +93,8 @@ const Dashboard = () => {
             activeTab={activeTab} 
             setActiveTab={setActiveTab}
             onDeleteLead={deleteLead}
-            isPro={isPro} 
+            isPro={isPro}
+            isAdmin={isAdmin} 
           />
         )}
       </motion.div>

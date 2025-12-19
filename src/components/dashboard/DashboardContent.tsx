@@ -13,6 +13,7 @@ interface DashboardContentProps {
   setActiveTab: (tab: string) => void;
   onDeleteLead?: (id: string) => void;
   isPro?: boolean;
+  isAdmin?: boolean;
 }
 
 const DashboardContent = ({ 
@@ -21,7 +22,8 @@ const DashboardContent = ({
   activeTab, 
   setActiveTab, 
   onDeleteLead,
-  isPro = false 
+  isPro = false,
+  isAdmin = false 
 }: DashboardContentProps) => {
   const itemVariants = {
     hidden: { opacity: 0 },
@@ -50,6 +52,7 @@ const DashboardContent = ({
             activeTab={activeTab} 
             setActiveTab={setActiveTab}
             onDeleteLead={onDeleteLead}
+            isAdmin={isAdmin}
           />
         </motion.div>
         
